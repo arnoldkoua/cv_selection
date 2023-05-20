@@ -32,7 +32,7 @@ def calculate_scores(resumes, keywords):
         scores.append(score)
     return scores
 
-# Function to display scores and generate graph
+# Function to display scores
 def display_scores(scores, candidate_names, field_of_activity):
     df = pd.DataFrame({"Candidate Name": candidate_names, "Match Scores": scores, "Field of Activity": field_of_activity})
     df['Rank'] = df['Match Scores'].rank(ascending=False, method='min')  # Calculate ranks based on scores
@@ -59,23 +59,50 @@ def display_scores(scores, candidate_names, field_of_activity):
 
 # Streamlit app
 def main():
-    st.title("Resume Analysis App")
 
-    # Field of Activity and Keywords input
-    field_of_activity = st.text_input("Enter the Field of Activity")
-    keyword_input = st.text_area("Enter the Keywords (separated by comma)")
+    # Centered title
+    st.markdown(
+        """
+        <style>
+        body {
+            background-color: #BF8C88;
+        }
+        .title {
+            text-align: left;
+            text-decoration: underline;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-    if field_of_activity and keyword_input:
+    st.markdown('<h2 class="title">Resume Analysis App</h2>', unsafe_allow_html=True)
+
+    # st.sidebar.title("Resume Analysis App")
+
+    # Sidebar options
+    st.sidebar.markdown('<h2 class="title">Options</h2>', unsafe_allow_html=True)
+
+    # Field of Activity input
+    field_of_activity = st.sidebar.text_input("Enter the Field of Activity")
+
+    # Keywords input
+    keyword_input = st.sidebar.text_area("Enter the Keywords (separated by comma)")
+
+    # File uploader to load resumes
+    st.markdown('<h3 class="title">File uploader to load resumes</h3>', unsafe_allow_html=True)
+    # st.title("File uploader to load resumes")
+    uploaded_files = st.file_uploader("Upload PDF Resumes", accept_multiple_files=True, type="pdf")
+
+    if field_of_activity and keyword_input and uploaded_files:
         keywords = [keyword.strip() for keyword in keyword_input.split(",")]
+        resumes = load_resumes(uploaded_files)
+        scores = calculate_scores(resumes, keywords)
+        
+        st.markdown('<h3 class="title">Display Match Scores</h3>', unsafe_allow_html=True)
+        # st.title("Display Match Scores")
+        display_scores(scores, [resume[0] for resume in resumes], [field_of_activity] * len(resumes))  # Pass candidate names and field_of_activity as lists
 
-        # File uploader to load resumes
-        uploaded_files = st.file_uploader("Upload PDF Resumes", accept_multiple_files=True, type="pdf")
-
-        if uploaded_files:
-            resumes = load_resumes(uploaded_files)
-            scores = calculate_scores(resumes, keywords)
-            display_scores(scores, [resume[0] for resume in resumes], [field_of_activity] * len(resumes))  # Pass candidate names and field_of_activity as lists
-            
 # Run the app
 if __name__ == "__main__":
     main()

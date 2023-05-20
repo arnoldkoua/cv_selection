@@ -1,7 +1,6 @@
 import streamlit as st
 import PyPDF2
 import pandas as pd
-import matplotlib.pyplot as plt
 import re
 import base64
 import io

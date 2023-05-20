@@ -2,10 +2,8 @@ import streamlit as st
 import PyPDF2
 import pandas as pd
 import re
-import glob
 import base64
 import io
-import os
 from datetime import datetime
 
 # Function to extract text from PDF
@@ -16,15 +14,13 @@ def extract_text_from_pdf(file):
         text += page.extract_text()
     return text
 
-# Load and extract text from multiple PDF resumes in a folder
-def load_resumes_from_folder(folder_path):
+# Load and extract text from multiple PDF resumes
+def load_resumes(files):
     resumes = []
-    pdf_files = glob.glob(folder_path + "/*.pdf")
-    for file in pdf_files:
-        candidate_name = re.sub(r'[-_]', ' ', os.path.basename(file).split(".")[0])  # Replace '-' and '_' with space
+    for file in files:
+        candidate_name = re.sub(r'[-_]', ' ', file.name.split(".")[0])  # Replace '-' and '_' with space
         candidate_name = re.sub(r'\bCV\b', '', candidate_name, flags=re.IGNORECASE)  # Remove 'CV' or 'cv' keyword
-        with open(file, "rb") as f:
-            resume_text = extract_text_from_pdf(f)
+        resume_text = extract_text_from_pdf(file)
         resumes.append((candidate_name.strip(), resume_text))  # Store candidate name along with the resume content
     return resumes
 
@@ -93,20 +89,18 @@ def main():
     # Keywords input
     keyword_input = st.sidebar.text_area("Enter the Keywords (separated by comma)")
 
-    # Folder uploader to load CVs
-    st.markdown('<h3 class="title">Folder uploader to load CVs</h3>', unsafe_allow_html=True)
-    folder_path = st.text_input("Enter the Folder Path")
+    # File uploader to load resumes
+    st.markdown('<h3 class="title">File uploader to load resumes</h3>', unsafe_allow_html=True)
+    # st.title("File uploader to load resumes")
+    uploaded_files = st.file_uploader("Upload PDF Resumes", accept_multiple_files=True, type="pdf")
 
-    if field_of_activity and keyword_input and folder_path:
-        if not os.path.exists(folder_path):
-            st.error("Folder path does not exist.")
-            return
-        
+    if field_of_activity and keyword_input and uploaded_files:
         keywords = [keyword.strip() for keyword in keyword_input.split(",")]
-        resumes = load_resumes_from_folder(folder_path)
+        resumes = load_resumes(uploaded_files)
         scores = calculate_scores(resumes, keywords)
         
         st.markdown('<h3 class="title">Display Match Scores</h3>', unsafe_allow_html=True)
+        # st.title("Display Match Scores")
         display_scores(scores, [resume[0] for resume in resumes], [field_of_activity] * len(resumes))  # Pass candidate names and field_of_activity as lists
 
 # Run the app

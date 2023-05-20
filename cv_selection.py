@@ -45,7 +45,7 @@ def display_scores(scores, candidate_names, field_of_activity):
     st.dataframe(sorted_df)
     
     # Generate download link for the dataframe as an XLSX file
-    area = df["Field of Activity"][1]
+    area = field_of_activity[0]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{area} Resume Match Scores_{timestamp}.xlsx"
     
